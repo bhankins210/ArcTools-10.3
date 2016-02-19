@@ -27,7 +27,7 @@ else:
 arcpy.AddMessage('With Duplication - ' + dup_on)	
 
 
-# Profile locations.  This calls either one (no duplication) or two (with duplication) stored procedures on MS-SQL2
+# Profile locations.  This calls either one (no dupliocation) or two (with duplication) stored procedures on MS-SQL2
 
 # If duplication box is checked:
 # First script profiles normally, without duplication.  2nd script adds duplication to max distance.	
