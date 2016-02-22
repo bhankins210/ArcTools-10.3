@@ -49,6 +49,13 @@ end_date = str(end_date_in)
 state_string = arcpy.GetParameterAsText(7)
 all_state = arcpy.GetParameterAsText(8)
 
+# auto add created layers to TOC.  Default itrue
+auto_add = arcpy.GetParameterAsText(9)
+if str(auto_add) == 'true':
+	add_layers = 'yes'
+else:
+	add_layers = 'no'
+
 # define environment settings
 space = r'C:\Users\bhankins\AppData\Roaming\ESRI\Desktop10.3\ArcCatalog\spatial_view.sde'
 arcpy.env.workspace = space
@@ -139,19 +146,7 @@ if zip_on == 'yes':
 		con.commit()
 		con.close()
 	
-	# target_folder = 'Database Connections\spatial_view.sde'	
-	# arcpy.RefreshCatalog(target_folder)	
-	# # db_connection = r'C:\Users\bhankins\AppData\Roaming\ESRI\Desktop10.3\ArcCatalog\spatial_view.sde'
-	# # mxd = arcpy.mapping.MapDocument(r"CURRENT")
-	# # df = arcpy.mapping.ListDataFrames(mxd)[0]
-	# # # zip_view is defined earlier in the script
-	# # select_query = 'select * from ' + zip_view
-	# # # zip_layer = zip_view
-	# # arcpy.MakeQueryLayer_management(db_connection,zip_view,select_query,"ID","POLYLINE")
-	# # layer = arcpy.mapping.Layer(zip_view)
-	# # arcpy.mapping.AddLayer(df, layer, "TOP")
-	# arcpy.RefreshTOC()
-	# arcpy.RefreshActiveView()	
+
 	
 	
 	
@@ -238,6 +233,10 @@ if split_on == 'yes':
 		con.commit()
 		con.close()
 
+
+
+
+	
 # Generate route Table	
 if route_on == 'yes':
 	route_table = 'tblr_' + table_name
@@ -320,120 +319,50 @@ if route_on == 'yes':
 		cur.execute(sql_command_5)
 		con.commit()
 		con.close()
-		
-# # Generate Split Table		
-# if split_on == 'yes':
-	# split_table = 'tbls_' + table_name
-	# # Generate table for all states	
-	# if str(all_state) == 'true':
-		# all_state_on = 'yes'
-		# arcpy.AddMessage('Generate Table for All States')
-		# connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		# con = pypyodbc.connect(connection_string)
-		# cur = con.cursor()
-		# sql_command = """select * into %s from [map_data].dbo.tblmappingsplitzipdata_cp a where a.inhome_date >= ? and a.inhome_date <= ? or event_type = 'solo' """ % split_table
-		# sql_command_2 = """ALTER TABLE %s ADD selected bit,userSelect varchar(50),store varchar(50),distance float""" % split_table
-		# sql_command_3 = """UPDATE %s SET selected = 0""" % split_table
-		# date_list = list()
-		# date_list.append(start_date)
-		# date_list.append(end_date)
-		# params = date_list
-		# cur.execute(sql_command,params)	
-		# cur.execute(sql_command_2)
-		# cur.execute(sql_command_3)
-		# con.commit()
-		# con.close()
+	
 
-	# # Generate table for listed states	
-	# else:
-		# all_state_on = 'no'
-		# state_string = state_string.upper()
-		# state_tuple = tuple(state_string.split(','))
-		# arcpy.AddMessage('Generate Table for:')
-		# for x in state_tuple:
-			# arcpy.AddMessage(x)
-		# connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		# con = pypyodbc.connect(connection_string)
-		# cur = con.cursor()
-		# ph = ",".join("?" * len(state_tuple))
-		# arcpy.AddMessage('1')
-		# sql_command = """select * into %s from [map_data].dbo.tblmappingsplitzipdata_cp a where a.[state] in (%s) and (a.inhome_date >= %s and a.inhome_date <= %s or a.event_type = 'solo')""" % (split_table, ph,"'"+start_date+"'","'"+end_date+"'")
-		# sql_command_2 = """ALTER TABLE %s ADD selected bit,userSelect varchar(50),store varchar(50),distance float""" % split_table
-		# sql_command_3 = """UPDATE %s SET selected = 0""" % split_table
-		# arcpy.AddMessage(sql_command)
-		# arcpy.AddMessage(sql_command_2)
-		# arcpy.AddMessage(sql_command_3)
-		# cur.execute(sql_command,state_tuple)
-		# cur.execute(sql_command_2)
-		# cur.execute(sql_command_3)
-		# con.commit()
-		# con.close()
-
-# if route_on == 'yes':
-	# route_table = 'tblr_' + table_name		
-	# # Generate table for all states	
-	# if str(all_state) == 'true':
-		# all_state_on = 'yes'
-		# arcpy.AddMessage('Generate Table for All States')
-		# connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		# con = pypyodbc.connect(connection_string)
-		# cur = con.cursor()
-		# sql_command = """select * into %s from [map_data].dbo.tblmappingroutedata_cp a where a.inhome_date >= ? and a.inhome_date <= ? or event_type = 'solo' """ % route_table
-		# sql_command_2 = """ALTER TABLE %s ADD selected bit,userSelect varchar(50),store varchar(50),distance float""" % route_table
-		# sql_command_3 = """UPDATE %s SET selected = 0""" % route_table
-		# date_list = list()
-		# date_list.append(start_date)
-		# date_list.append(end_date)
-		# params = date_list
-		# cur.execute(sql_command,params)	
-		# cur.execute(sql_command_2)
-		# cur.execute(sql_command_3)
-		# con.commit()
-		# con.close()
-
-	# # Generate table for listed states	
-	# else:
-		# all_state_on = 'no'
-		# state_string = state_string.upper()
-		# state_tuple = tuple(state_string.split(','))
-		# arcpy.AddMessage('Generate Table for:')
-		# for x in state_tuple:
-			# arcpy.AddMessage(x)
-		# connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		# con = pypyodbc.connect(connection_string)
-		# cur = con.cursor()
-		# ph = ",".join("?" * len(state_tuple))
-		# arcpy.AddMessage('1')
-		# sql_command = """select * into %s from [map_data].dbo.tblmappingroutedata_cp a where a.[state] in (%s) and (a.inhome_date >= %s and a.inhome_date <= %s or a.event_type = 'solo')""" % (route_table, ph,"'"+start_date+"'","'"+end_date+"'")
-		# sql_command_2 = """ALTER TABLE %s ADD selected bit,userSelect varchar(50),store varchar(50),distance float""" % route_table
-		# sql_command_3 = """UPDATE %s SET selected = 0""" % route_table
-		# arcpy.AddMessage(sql_command)
-		# arcpy.AddMessage(sql_command_2)
-		# arcpy.AddMessage(sql_command_3)
-		# cur.execute(sql_command,state_tuple)
-		# cur.execute(sql_command_2)
-		# cur.execute(sql_command_3)
-		# con.commit()
-		# con.close()
+	
 else:
 	arcpy.AddMessage('Please Select Geography to Create View')
 		
 arcpy.AddMessage('Tables Generated:')
-	
-if zip_on == 'yes':
-	zip_table = 'TBLZ_' + table_name
-	arcpy.AddMessage(zip_table)
-if split_on == 'yes':
-	split_table = 'TBLS_' + table_name
-	arcpy.AddMessage(split_table)
-if route_on == 'yes':
-	route_table = 'TBLR_' + table_name
-	arcpy.AddMessage(route_table)
 
-	
+
+# add view layers to TOC	
 target_folder = 'Database Connections\spatial_view.sde'	
 arcpy.RefreshCatalog(target_folder)	
+
+if add_layers == 'yes':
+	db_connection = r'C:\Users\bhankins\AppData\Roaming\ESRI\Desktop10.3\ArcCatalog\spatial_view.sde'
+	mxd = arcpy.mapping.MapDocument(r"CURRENT")
+	df = arcpy.mapping.ListDataFrames(mxd)[0]
+
+	if zip_on == 'yes':
+		zip_table = 'TBLZ_' + table_name
+		arcpy.AddMessage(zip_table)
+		select_query = 'select * from ' + zip_view
+		arcpy.MakeQueryLayer_management(target_folder,zip_view,select_query,"ID","POLYLINE")
+		layer = arcpy.mapping.Layer(zip_view)
+		arcpy.mapping.AddLayer(df, layer, "TOP")
+
+	if split_on == 'yes':
+		split_table = 'TBLS_' + table_name
+		arcpy.AddMessage(split_table)
+		select_query = 'select * from ' + split_view
+		arcpy.MakeQueryLayer_management(db_connection,split_view,select_query,"ID","POLYLINE")
+		layer = arcpy.mapping.Layer(split_view)
+		arcpy.mapping.AddLayer(df, layer, "TOP")
+
+	if route_on == 'yes':
+		route_table = 'TBLR_' + table_name
+		arcpy.AddMessage(route_table)
+		select_query = 'select * from ' + route_view
+		arcpy.MakeQueryLayer_management(db_connection,route_view,select_query,"ID","POLYLINE")
+		layer = arcpy.mapping.Layer(route_view)
+		arcpy.mapping.AddLayer(df, layer, "TOP")
+
+# refresh toc	
 arcpy.RefreshTOC()
 arcpy.RefreshActiveView()
-	
+
 	

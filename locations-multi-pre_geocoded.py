@@ -19,7 +19,7 @@ new_mdb_name = arcpy.GetParameterAsText(4)
 # existing_db = arcpy.GetParameterAsText(5)
 mdb_loc = arcpy.GetParameterAsText(5)
 
-if str(existing_db) == 'false':
+if str(new_db) == 'true':
 	arcpy.CreatePersonalGDB_management(new_mdb_loc,new_mdb_name)
 	print 'Database Crested'
 	#arcpy.env.workspace = mdb_name

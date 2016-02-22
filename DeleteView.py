@@ -10,10 +10,10 @@ time1 = time.clock()
 
 #define input parameters
 view_name_in = arcpy.GetParameterAsText(0)
-# view_name = view_name_in
-view_name = "svw" + view_name_in[20:]
-# table_name = "tbl" + view_name_in[3:]
-table_name = "tbl" + view_name_in[20:]
+view_name = view_name_in
+# view_name = "svw" + view_name_in[20:]
+table_name = "tbl" + view_name_in[3:]
+# table_name = "tbl" + view_name_in[20:]
 
 
 # define environment settings
