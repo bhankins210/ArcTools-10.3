@@ -9,49 +9,70 @@ arcpy.AddMessage('Defining Variables')
 time1 = time.clock()
 request_in = arcpy.GetParameterAsText(0)
 request_id = request_in.upper() 
-loc_name = request_id + '_LOC'
+loc_out = request_id + '_LOC'
 address_in = arcpy.GetParameterAsText(1)
 city_in = arcpy.GetParameterAsText(2)
 state_in = arcpy.GetParameterAsText(3)
 zip_in = arcpy.GetParameter(4)
 store_in = arcpy.GetParameterAsText(5)
-mdb_loc = arcpy.GetParameterAsText(6)
-mdb_name = arcpy.GetParameterAsText(7)
-ischecked = arcpy.GetParameterAsText(8)
-if str(ischecked) == 'false':
-	arcpy.CreatePersonalGDB_management(mdb_loc,mdb_name)
+
+
+# create new database
+new_db = arcpy.GetParameterAsText(6)
+new_mdb_loc = arcpy.GetParameterAsText(7)
+new_mdb_name = arcpy.GetParameterAsText(8)
+
+# existing_db = arcpy.GetParameterAsText(5)
+mdb_loc = arcpy.GetParameterAsText(9)
+
+if str(new_db) == 'true':
+	arcpy.CreatePersonalGDB_management(new_mdb_loc,new_mdb_name)
 	print 'Database Crested'
 	#arcpy.env.workspace = mdb_name
-	space = mdb_loc + '/' + mdb_name
+	space = new_mdb_loc + '/' + new_mdb_name
 	arcpy.env.workspace = space
-	arcpy.AddMessage('Creating New Database')
-else: #in this case, the check box value is 'false', user did not check the box
-	space = mdb_loc + '/' + mdb_name
+else: 
+	space = mdb_loc
 	arcpy.env.workspace = space
-	arcpy.AddMessage('Using Existing Database')
+	arcpy.AddMessage('Use existing database')
+
+# mdb_loc = arcpy.GetParameterAsText(6)
+# mdb_name = arcpy.GetParameterAsText(7)
+# ischecked = arcpy.GetParameterAsText(8)
+# if str(ischecked) == 'false':
+	# arcpy.CreatePersonalGDB_management(mdb_loc,mdb_name)
+	# print 'Database Crested'
+	# #arcpy.env.workspace = mdb_name
+	# space = mdb_loc + '/' + mdb_name
+	# arcpy.env.workspace = space
+	# arcpy.AddMessage('Creating New Database')
+# else: #in this case, the check box value is 'false', user did not check the box
+	# space = mdb_loc + '/' + mdb_name
+	# arcpy.env.workspace = space
+	# arcpy.AddMessage('Using Existing Database')
 	
 # turn on buffering - default true
-buffer_yes = arcpy.GetParameterAsText(9)
+buffer_yes = arcpy.GetParameterAsText(10)
 if str(buffer_yes) == 'true':
 	run_buffer_tool = 'yes'
 else:
 	run_buffer_tool = 'no'
 	
 # override error out on zip centroid
-centroid_error = arcpy.GetParameterAsText(10) 	
+centroid_error = arcpy.GetParameterAsText(11) 	
 if str(centroid_error) == 'true':
 	ignore_centroid_error = 'yes'
 else:
 	ignore_centroid_error = 'no'
 	
 # buffer parameters
-buffer_in = arcpy.GetParameterAsText(11)
-buffer_check = arcpy.GetParameterAsText(12)
+buffer_in = arcpy.GetParameterAsText(12)
+buffer_check = arcpy.GetParameterAsText(13)
 if str(buffer_check) == 'true':
 	buffer_out = str(buffer_in) + ' miles'
 else:
 	buffer_out = str(buffer_in)
-dissolve_type = arcpy.GetParameterAsText(13)
+dissolve_type = arcpy.GetParameterAsText(14)
 
 
 #build variable list to create temp location import table
@@ -103,7 +124,7 @@ address_table = loc_table_temp
 # address_locator = r'C:\Program Files (x86)\ArcGIS\Desktop10.0\Business Analyst\Data\USA Geocoding Service\USA Geocoding Service.loc'
 address_locator = r'C:\ArcGIS\Business Analyst\US_2015\Data\Geocoding Data\USA_LocalComposite.loc'
 address_fields = "Address Address;City City;State State;ZIP Zip"
-geocode_result = loc_name
+geocode_result = loc_out
 arcpy.GeocodeAddresses_geocoding(address_table, address_locator, address_fields, geocode_result, 'STATIC')
 time2 = time.clock()  
 arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
@@ -114,7 +135,7 @@ time1 = time.clock()
 mxd = arcpy.mapping.MapDocument(r"CURRENT")
 df = arcpy.mapping.ListDataFrames(mxd,'*')[0]
 
-layer = arcpy.mapping.Layer(loc_name)
+layer = arcpy.mapping.Layer(loc_out)
 arcpy.mapping.AddLayer(df,layer)
 time2 = time.clock()  
 arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
@@ -125,16 +146,16 @@ arcpy.AddMessage('Cleaning Location File')
 time1 = time.clock()
 layers = arcpy.mapping.ListLayers(mxd)
 for layer in layers:
-	if layer.name == loc_name:	
-		temp_loc = loc_name
+	if layer.name == loc_out:	
+		temp_loc = loc_out
 	
 arcpy.CalculateField_management(temp_loc,"LATITUDE",'[Y]',"VB","#")
 arcpy.CalculateField_management(temp_loc,"LONGITUDE",'[X]',"VB","#")
-arcpy.CalculateField_management(temp_loc,"FAILURECODE","[Loc_name]","VB","#")
+arcpy.CalculateField_management(temp_loc,"FAILURECODE","[loc_out]","VB","#")
 
-# drop_fields = ['Loc_name','Status','Score','Match_type','Side','X','Y','Match_addr','Block','BlockL','BlockR','ARC_Addres','ARC_City','ARC_State','ARC_Zip','Address']
-# arcpy.DeleteField_management(temp_loc,'Loc_name;Status;Score;Match_type;Side;X;Y;Match_addr;Block;BlockL;BlockR;ARC_Addres;ARC_City;ARC_State;ARC_Zip')
-# arcpy.DeleteField_management(loc_name,drop_fields)
+# drop_fields = ['loc_out','Status','Score','Match_type','Side','X','Y','Match_addr','Block','BlockL','BlockR','ARC_Addres','ARC_City','ARC_State','ARC_Zip','Address']
+# arcpy.DeleteField_management(temp_loc,'loc_out;Status;Score;Match_type;Side;X;Y;Match_addr;Block;BlockL;BlockR;ARC_Addres;ARC_City;ARC_State;ARC_Zip')
+# arcpy.DeleteField_management(loc_out,drop_fields)
 arcpy.Delete_management(loc_table)
 time2 = time.clock()  
 arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
