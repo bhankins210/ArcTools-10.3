@@ -15,7 +15,7 @@ city_in = arcpy.GetParameterAsText(2)
 state_in = arcpy.GetParameterAsText(3)
 zip_in = arcpy.GetParameter(4)
 store_in = arcpy.GetParameterAsText(5)
-
+buffer_name = request_id + "_Buffer"
 
 # create new database
 new_db = arcpy.GetParameterAsText(6)
@@ -151,7 +151,7 @@ for layer in layers:
 	
 arcpy.CalculateField_management(temp_loc,"LATITUDE",'[Y]',"VB","#")
 arcpy.CalculateField_management(temp_loc,"LONGITUDE",'[X]',"VB","#")
-arcpy.CalculateField_management(temp_loc,"FAILURECODE","[loc_out]","VB","#")
+arcpy.CalculateField_management(temp_loc,"FAILURECODE","[loc_name]","VB","#")
 
 # drop_fields = ['loc_out','Status','Score','Match_type','Side','X','Y','Match_addr','Block','BlockL','BlockR','ARC_Addres','ARC_City','ARC_State','ARC_Zip','Address']
 # arcpy.DeleteField_management(temp_loc,'loc_out;Status;Score;Match_type;Side;X;Y;Match_addr;Block;BlockL;BlockR;ARC_Addres;ARC_City;ARC_State;ARC_Zip')
