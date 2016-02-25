@@ -322,8 +322,8 @@ if route_on == 'yes':
 	
 
 	
-else:
-	arcpy.AddMessage('Please Select Geography to Create View')
+# else:
+	# arcpy.AddMessage('Please Select Geography to Create View')
 		
 arcpy.AddMessage('Tables Generated:')
 
@@ -341,7 +341,7 @@ if add_layers == 'yes':
 		zip_table = 'TBLZ_' + table_name
 		arcpy.AddMessage(zip_table)
 		select_query = 'select * from ' + zip_view
-		arcpy.MakeQueryLayer_management(target_folder,zip_view,select_query,"ID","POLYLINE")
+		arcpy.MakeQueryLayer_management(target_folder,zip_view,select_query,"ID","POLYGON")
 		layer = arcpy.mapping.Layer(zip_view)
 		arcpy.mapping.AddLayer(df, layer, "TOP")
 
@@ -349,7 +349,7 @@ if add_layers == 'yes':
 		split_table = 'TBLS_' + table_name
 		arcpy.AddMessage(split_table)
 		select_query = 'select * from ' + split_view
-		arcpy.MakeQueryLayer_management(db_connection,split_view,select_query,"ID","POLYLINE")
+		arcpy.MakeQueryLayer_management(db_connection,split_view,select_query,"ID","POLYGON")
 		layer = arcpy.mapping.Layer(split_view)
 		arcpy.mapping.AddLayer(df, layer, "TOP")
 
@@ -357,7 +357,7 @@ if add_layers == 'yes':
 		route_table = 'TBLR_' + table_name
 		arcpy.AddMessage(route_table)
 		select_query = 'select * from ' + route_view
-		arcpy.MakeQueryLayer_management(db_connection,route_view,select_query,"ID","POLYLINE")
+		arcpy.MakeQueryLayer_management(db_connection,route_view,select_query,"ID","POLYGON")
 		layer = arcpy.mapping.Layer(route_view)
 		arcpy.mapping.AddLayer(df, layer, "TOP")
 
