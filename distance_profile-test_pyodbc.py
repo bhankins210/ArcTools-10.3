@@ -1,7 +1,7 @@
 import arcpy
 from arcpy import env
 from arcpy import mapping 
-import pypyodbc
+import pyodbc
 
 # Specify Input variables
 
@@ -61,7 +61,7 @@ for table_view in tbl_list:
 		# First pass - no duplication
 		# connect to MS-SQL2
 		connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		con = pypyodbc.connect(connection_string)
+		con = pyodbc.connect(connection_string)
 		cur = con.cursor()	
 		# Create search cursor in arcpy
 		featureclass = loc_table
@@ -87,9 +87,9 @@ for table_view in tbl_list:
 		
 		# Second pass - with duplication 
 		# connect to MS-SQL2
-		connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		con = pypyodbc.connect(connection_string)
-		cur = con.cursor()	
+		connection_string2 = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
+		con2 = pyodbc.connect(connection_string2)
+		cur2 = con2.cursor()	
 		# Create search cursor in arcpy
 		featureclass = loc_table
 		rows = arcpy.SearchCursor(featureclass)
@@ -105,11 +105,11 @@ for table_view in tbl_list:
 			lat = row.latitude
 			lon = row.longitude
 			# Build sql exec command
-			sql_command = 'EXEC [dbo].[gis_RadiusDupes_brian] ' + "'" + tbl + "'" + ', ' + "'" + str(lat) + "'" + ', ' + "'" +  str(lon) + "'" + ', ' + "'" + str(radius) + "'" +', ' + "'" + str(store) + "'" + ', ' + "'" + dupes + "'"
-			cur.execute(sql_command)
-			con.commit()
+			sql_command2 = 'EXEC [dbo].[gis_RadiusDupes_brian] ' + "'" + tbl + "'" + ', ' + "'" + str(lat) + "'" + ', ' + "'" +  str(lon) + "'" + ', ' + "'" + str(radius) + "'" +', ' + "'" + str(store) + "'" + ', ' + "'" + dupes + "'"
+			cur2.execute(sql_command2)
+			con2.commit()
 			row = rows.next()
-		con.close()
+		con2.close()
 		arcpy.AddMessage('Profile Complete')
 		
 		
@@ -117,7 +117,7 @@ for table_view in tbl_list:
 		# Single pass - no duplication
 		# connect to MS-SQL2
 		connection_string2 = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		con2 = pypyodbc.connect(connection_string2)
+		con2 = pyodbc.connect(connection_string2)
 		cur2 = con2.cursor()	
 		# Create search cursor in arcpy
 		featureclass = loc_table
