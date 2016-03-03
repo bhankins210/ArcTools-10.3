@@ -57,33 +57,35 @@ for table_view in tbl_list:
 
 	# If duplication box is checked:
 	# First script profiles normally, without duplication.  2nd script adds duplication to max distance.	
-	if dup_on == 'yes':
-		# First pass - no duplication
+			# First pass - no duplication
 		# connect to MS-SQL2
-		connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		con = pypyodbc.connect(connection_string)
-		cur = con.cursor()	
-		# Create search cursor in arcpy
-		featureclass = loc_table
-		rows = arcpy.SearchCursor(featureclass)
+	connection_string = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
+	con = pypyodbc.connect(connection_string)
+	cur = con.cursor()	
+	# Create search cursor in arcpy
+	featureclass = loc_table
+	rows = arcpy.SearchCursor(featureclass)
+	row = rows.next()
+	# Define variables for 
+	radius = max_radius
+	dupes = 'no'
+	tbl = spatial_view
+	# Loop through locations table and run stored procedure for each location.  This follows Arcmap's select logic.  
+	# If features are selected, those are the only ones that will be profiled.
+	while row:
+		store = row.store
+		lat = row.latitude
+		lon = row.longitude
+		# Build sql exec command
+		sql_command = 'EXEC [dbo].[gis_SearchRadius_brian] ' + "'" + tbl + "'" + ', ' + "'" + str(lat) + "'" + ', ' + "'" +  str(lon) + "'" + ', ' + "'" + str(radius) + "'" +', ' + "'" + str(store) + "'" + ', ' + "'" + dupes + "'"
+		cur.execute(sql_command)
+		con.commit()
 		row = rows.next()
-		# Define variables for 
-		radius = max_radius
-		dupes = 'no'
-		tbl = spatial_view
-		# Loop through locations table and run stored procedure for each location.  This follows Arcmap's select logic.  
-		# If features are selected, those are the only ones that will be profiled.
-		while row:
-			store = row.store
-			lat = row.latitude
-			lon = row.longitude
-			# Build sql exec command
-			sql_command = 'EXEC [dbo].[gis_SearchRadius_brian] ' + "'" + tbl + "'" + ', ' + "'" + str(lat) + "'" + ', ' + "'" +  str(lon) + "'" + ', ' + "'" + str(radius) + "'" +', ' + "'" + str(store) + "'" + ', ' + "'" + dupes + "'"
-			cur.execute(sql_command)
-			con.commit()
-			row = rows.next()
-		con.close()
-		arcpy.AddMessage('Profile - First Pass')
+	con.close()
+	arcpy.AddMessage('Profile - First Pass')
+	
+	if dup_on == 'yes':
+
 		
 		# Second pass - with duplication 
 		# connect to MS-SQL2
@@ -113,30 +115,3 @@ for table_view in tbl_list:
 		arcpy.AddMessage('Profile Complete')
 		
 		
-	else:
-		# Single pass - no duplication
-		# connect to MS-SQL2
-		connection_string2 = 'DRIVER={SQL Server};SERVER=mapping-sqldev\esri;DATABASE=spatial_view;UID=id;PWD=pass;Trusted_Connection=Yes'
-		con2 = pypyodbc.connect(connection_string2)
-		cur2 = con2.cursor()	
-		# Create search cursor in arcpy
-		featureclass = loc_table
-		rows = arcpy.SearchCursor(featureclass)
-		row = rows.next()
-		# Define variables for 
-		radius = max_radius
-		dupes = 'no'
-		tbl = spatial_view
-		# Loop through locations table and run stored procedure for each location.  This follows Arcmap's select logic.  
-		# If features are selected, those are the only ones that will be profiled.
-		while row:
-			store = row.store
-			lat = row.latitude
-			lon = row.longitude
-			# Build sql exec command
-			sql_command = 'EXEC [dbo].[gis_SearchRadius_brian] ' + "'" + tbl + "'" + ', ' + "'" + str(lat) + "'" + ', ' + "'" +  str(lon) + "'" + ', ' + "'" + str(radius) + "'" +', ' + "'" + str(store) + "'" + ', ' + "'" + dupes + "'"
-			cur2.execute(sql_command)
-			con2.commit()
-			row = rows.next()
-		con2.close()
-		arcpy.AddMessage('Profile Complete')

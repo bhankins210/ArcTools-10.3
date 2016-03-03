@@ -1,8 +1,7 @@
 import arcpy
 from arcpy import env
 from arcpy import mapping 
-import csv
-import os
+
 
 #Define variable through ArcMap script
 arcpy.AddMessage('Defining Variables')
@@ -22,7 +21,7 @@ new_db = arcpy.GetParameterAsText(6)
 new_mdb_loc = arcpy.GetParameterAsText(7)
 new_mdb_name = arcpy.GetParameterAsText(8)
 
-# existing_db = arcpy.GetParameterAsText(5)
+# use existing database
 mdb_loc = arcpy.GetParameterAsText(9)
 
 if str(new_db) == 'true':
@@ -36,21 +35,6 @@ else:
 	arcpy.env.workspace = space
 	arcpy.AddMessage('Use existing database')
 
-# mdb_loc = arcpy.GetParameterAsText(6)
-# mdb_name = arcpy.GetParameterAsText(7)
-# ischecked = arcpy.GetParameterAsText(8)
-# if str(ischecked) == 'false':
-	# arcpy.CreatePersonalGDB_management(mdb_loc,mdb_name)
-	# print 'Database Crested'
-	# #arcpy.env.workspace = mdb_name
-	# space = mdb_loc + '/' + mdb_name
-	# arcpy.env.workspace = space
-	# arcpy.AddMessage('Creating New Database')
-# else: #in this case, the check box value is 'false', user did not check the box
-	# space = mdb_loc + '/' + mdb_name
-	# arcpy.env.workspace = space
-	# arcpy.AddMessage('Using Existing Database')
-	
 # turn on buffering - default true
 buffer_yes = arcpy.GetParameterAsText(10)
 if str(buffer_yes) == 'true':
@@ -76,7 +60,13 @@ dissolve_type = arcpy.GetParameterAsText(14)
 
 
 
-temp_table = arcpy.CreateTable_management("in_memory", "temp_table")
+if temp_table:
+	arcpy.Delete_management(temp_table)
+	arcpy.AddMessage('Deleting Temp Table')
+	
+table_loc = "in_memory"
+table_name = "temp_table_name"
+temp_table = arcpy.CreateTable_management(table_loc, table_name)
 arcpy.AddField_management(temp_table, "Address", "TEXT", field_length=1100)
 arcpy.AddField_management(temp_table, "city", "TEXT", field_length=30)
 arcpy.AddField_management(temp_table, "state", "TEXT", field_length=2)
@@ -92,79 +82,14 @@ arcpy.AddField_management(temp_table, "REQUESTID", "FLOAT", field_length=20)
 cursor = arcpy.da.InsertCursor(temp_table, ["Address", "city", "state", "zip", "store"])
 cursor.insertRow([address_in, city_in, state_in, zip_in, store_in])
 
-# cursor = arcpy.da.InsertCursor(temp_table, ["Address"])
-# cursor.insertRow([address_in])
-# cursor = arcpy.da.InsertCursor(temp_table, ["city"])
-# cursor.insertRow([city_in])
-# cursor = arcpy.da.InsertCursor(temp_table, ["state"])
-# cursor.insertRow([state_in])
-# cursor = arcpy.da.InsertCursor(temp_table, ["zip"])
-# cursor.insertRow([zip_in])
-# cursor = arcpy.da.InsertCursor(temp_table, ["store"])
-# cursor.insertRow([store_in])
-# cursor = arcpy.da.InsertCursor(temp_table, ["lat"])
-# cursor.insertRow([lat])
-# cursor = arcpy.da.InsertCursor(temp_table, ["long"])
-# cursor.insertRow([long])
-
-
-# #build variable list to create temp location import table
-# lat = float('0')
-# long = float ('0')
-# loc_var = list()
-# loc_var.append(address_in)
-# loc_var.append(city_in)
-# loc_var.append(state_in)
-# loc_var.append(zip_in)
-# loc_var.append(store_in)
-# loc_var.append(lat)
-# loc_var.append(long)
-# time2 = time.clock()  
-# arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
-
-# #Define scratch workspace
-# arcpy.AddMessage('Defining Workspaces')
-# time1 = time.clock()
-# arcpy.env.scratchWorkspace = r'C:\ArcGIS'
-# scratch = arcpy.env.scratchWorkspace
-# time2 = time.clock()  
-# arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
-
-
-
-
-
-# #create temp location file
-# arcpy.AddMessage('Creating Location Import File')
-# time1 = time.clock()
-# loc_table_temp = scratch + '/' + 'temp_loc.csv'
-# with open(loc_table_temp,'wb') as out_file:
-	# writer = csv.DictWriter(out_file, fieldnames = ['Address','city','state','zip','store','LATITUDE','LONGITUDE','FAILURECODE','RADIUS','REQUESTID'], delimiter = ',')
-	# writer.writerow(dict(zip(writer.fieldnames, writer.fieldnames)))
-	# writer = csv.writer(out_file)
-	# writer.writerow(loc_var)
-# time2 = time.clock()  
-# arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
-
-# #import location table	
-# arcpy.AddMessage('Importing Location')	
-# time1 = time.clock()
-# loc_table = 'loc_table'	
-# arcpy.TableToTable_conversion(loc_table_temp,space,loc_table)
-# time2 = time.clock()  
-# arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
-
 #Geocode location
 arcpy.AddMessage('Geocoding Location')
 time1 = time.clock()
-# address_table = temp_table
-# address_locator = r"GIS Servers\arcgis on http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer" 
-# address_locator = r'C:\Program Files (x86)\ArcGIS\Desktop10.0\Business Analyst\Data\USA Geocoding Service\USA Geocoding Service.loc'
-# address_locator = r'C:\ArcGIS\Business Analyst\US_2015\Data\Geocoding Data\USA_StreetAddress.loc'
 address_locator = r'C:\ArcGIS\Business Analyst\US_2015\Data\Geocoding Data\USA_LocalComposite.loc'
 address_fields = "Address Address;City City;State State;ZIP Zip"
 geocode_result = loc_out
 arcpy.GeocodeAddresses_geocoding(temp_table, address_locator, address_fields, geocode_result, 'STATIC')
+arcpy.Delete_management(temp_table)
 time2 = time.clock()  
 arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
 
@@ -187,7 +112,7 @@ layers = arcpy.mapping.ListLayers(mxd)
 for layer in layers:
 	if layer.name == loc_out:	
 		temp_loc = loc_out
-	
+
 arcpy.CalculateField_management(temp_loc,"LATITUDE",'[Y]',"VB","#")
 arcpy.CalculateField_management(temp_loc,"LONGITUDE",'[X]',"VB","#")
 arcpy.CalculateField_management(temp_loc,"FAILURECODE","[Loc_name]","VB","#")
@@ -195,16 +120,10 @@ arcpy.CalculateField_management(temp_loc,"FAILURECODE","[Loc_name]","VB","#")
 # drop_fields = ['loc_out','Status','Score','Match_type','Side','X','Y','Match_addr','Block','BlockL','BlockR','ARC_Addres','ARC_City','ARC_State','ARC_Zip','Address']
 # arcpy.DeleteField_management(temp_loc,'loc_out;Status;Score;Match_type;Side;X;Y;Match_addr;Block;BlockL;BlockR;ARC_Addres;ARC_City;ARC_State;ARC_Zip')
 # arcpy.DeleteField_management(loc_out,drop_fields)
-arcpy.Delete_management(temp_table)
+
 time2 = time.clock()  
 arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
 
-#Delete temp location file
-# arcpy.AddMessage('Removing Temp Files')
-# time1 = time.clock()
-# os.remove(loc_table_temp)
-# time2 = time.clock()  
-# arcpy.AddMessage("Processing Time: " + str(time2-time1) + " seconds")
 
 if run_buffer_tool == 'yes':
 
